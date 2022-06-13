@@ -10,21 +10,21 @@ import
     asynchttpserver,
     crab
 
-proc idx(req: Request): Future[void] {.async, gcsafe.} =
+proc idx(req: Request) {.async, gcsafe.} =
     await req.respond(Http200, "Hello, World!", newHttpHeaders())
 
-proc hlo(req: Request): Future[void] {.async, gcsafe.} =
+proc hlo(req: Request) {.async, gcsafe.} =
     await req.respond(Http200, "Goodbye, Mars!", newHttpHeaders())
 
-proc pst(req: Request): Future[void] {.async, gcsafe.} =
+proc pst(req: Request) {.async, gcsafe.} =
     await req.respond(Http200, "UwU", newHttpHeaders())
 
-proc cstErrHnd(req: Request): Future[void] {.async, gcsafe.} =
+proc cstErrHnd(req: Request) {.async, gcsafe.} =
     await req.respond(Http404, "Error, Page not Found!", newHttpHeaders())
 
-proc main(): Future[void] {.async.} =
+proc main() {.async.} =
     var
-        crab = createCrab()
+        crab = newCrab()
 
     crab.get("/", idx)
     crab.get("/h", hlo)

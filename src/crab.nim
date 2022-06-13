@@ -30,7 +30,7 @@ proc `$`*(crab: Crab): string =
   for route in crab.routes:
     result.add($route)
 
-proc createCrab*(): Crab =
+proc newCrab*(): Crab =
   result = new CrabObj
   result.errorHandler = defaultErrorRequestHandler
   result.routes = newSeq[Route](0)
@@ -38,7 +38,7 @@ proc createCrab*(): Crab =
 proc configureErrorHandler*(crab: var Crab, errorHandler: RequestHandler): void =
   crab.errorHandler = errorHandler
 
-proc createRoute*(path: string, httpMethod: HttpMethod, handler: RequestHandler): Route =
+proc newRoute*(path: string, httpMethod: HttpMethod, handler: RequestHandler): Route =
   result = new RouteObj
   result.path = path
   result.handler = handler
@@ -46,7 +46,7 @@ proc createRoute*(path: string, httpMethod: HttpMethod, handler: RequestHandler)
 
 proc route*(crab: var Crab, path: Uri | string, httpMethod: HttpMethod, handler: RequestHandler): void =
   if $path notin crab.routes.map(cr => cr.path):
-    crab.routes.add(createRoute($path, httpMethod, handler))
+    crab.routes.add(newRoute($path, httpMethod, handler))
 
 proc get*(crab: var Crab, path: Uri | string, handler: RequestHandler): void =
   crab.route(path, HttpGet, handler)
