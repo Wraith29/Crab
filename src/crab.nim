@@ -17,6 +17,7 @@ type
 
   CrabObj = object
     routes: seq[Route]
+    errorHandler: RequestHandler
   Crab* = ref CrabObj
 
 proc defaultErrorRequestHandler(request: Request): Future[void] {.async, gcsafe.} =
@@ -31,7 +32,11 @@ proc `$`*(crab: Crab): string =
 
 proc createCrab*(): Crab =
   result = new CrabObj
+  result.errorHandler = defaultErrorRequestHandler
   result.routes = newSeq[Route](0)
+
+proc configureErrorHandler*(crab: var Crab, errorHandler: RequestHandler): void =
+  crab.errorHandler = errorHandler
 
 proc createRoute*(path: string, httpMethod: HttpMethod, handler: RequestHandler): Route =
   result = new RouteObj
@@ -39,14 +44,33 @@ proc createRoute*(path: string, httpMethod: HttpMethod, handler: RequestHandler)
   result.handler = handler
   result.httpMethod = httpMethod
 
-proc addRouteHandler*(crab: var Crab, path: string, httpMethod: HttpMethod, handler: RequestHandler): void =
-  let routes = crab.routes.map(cr => cr.path)
+proc route*(crab: var Crab, path: Uri | string, httpMethod: HttpMethod, handler: RequestHandler): void =
+  if $path notin crab.routes.map(cr => cr.path):
+    crab.routes.add(createRoute($path, httpMethod, handler))
 
-  if path notin routes:
-    crab.routes.add(createRoute(path, httpMethod, handler))
+proc get*(crab: var Crab, path: Uri | string, handler: RequestHandler): void =
+  crab.route(path, HttpGet, handler)
 
-proc addRouteHandler*(crab: var Crab, route: Uri, httpMethod: HttpMethod, handler: RequestHandler): void =
-  crab.addRouteHandler($route, httpMethod, handler)
+proc post*(crab: var Crab, path: Uri | string, handler: RequestHandler): void =
+  crab.route(path, HttpPost, handler)
+
+proc put*(crab: var Crab, path: Uri | string, handler: RequestHandler): void =
+  crab.route(path, HttpPut, handler)
+
+proc delete*(crab: var Crab, path: Uri | string, handler: RequestHandler): void =
+  crab.route(path, HttpDelete, handler)
+
+proc trace*(crab: var Crab, path: Uri | string, handler: RequestHandler): void =
+  crab.route(path, HttpTrace, handler)
+
+proc options*(crab: var Crab, path: Uri | string, handler: RequestHandler): void =
+  crab.route(path, HttpOptions, handler)
+
+proc connect*(crab: var Crab, path: Uri | string, handler: RequestHandler): void =
+  crab.route(path, HttpConnect, handler)
+
+proc patch*(crab: var Crab, path: Uri | string, handler: RequestHandler): void =
+  crab.route(path, HttpPatch, handler)
 
 proc getRouteHandler(crab: Crab, request: Request): RequestHandler =
   let handlers = collect:
@@ -55,13 +79,13 @@ proc getRouteHandler(crab: Crab, request: Request): RequestHandler =
         route.handler
 
   if handlers.len <= 0:
-    return defaultErrorRequestHandler
+    return crab.errorHandler
   return handlers[0]
 
 proc createHandler(crab: Crab): Future[RequestHandler] {.async.} =
   proc handle(request: Request): Future[void] {.async.} =
     let requestHandler = crab.getRouteHandler(request)
-    echo fmt"{request.reqMethod}: {$request.url}"
+    echo &"{request.reqMethod}:\t{$request.url}"
     await requestHandler(request)
   result = handle
 

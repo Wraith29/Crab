@@ -9,12 +9,20 @@ proc idx(req: Request): Future[void] {.async, gcsafe.} =
 proc hlo(req: Request): Future[void] {.async, gcsafe.} =
     await req.respond(Http200, "Goodbye, Mars!", newHttpHeaders())
 
+proc pst(req: Request): Future[void] {.async, gcsafe.} =
+    await req.respond(Http200, "UwU", newHttpHeaders())
+
+proc cstErrHnd(req: Request): Future[void] {.async, gcsafe.} =
+    await req.respond(Http404, "Error, Page not Found!", newHttpHeaders())
+
 proc main(): Future[void] {.async.} =
     var
         crab = createCrab()
 
-    crab.addRouteHandler("/", HttpGet, idx)
-    crab.addRouteHandler("/h", HttpGet, hlo)
+    crab.get("/", idx)
+    crab.get("/h", hlo)
+    crab.post("/i", pst)
+    crab.configureErrorHandler(cstErrHnd)
 
     waitFor crab.run()
 
