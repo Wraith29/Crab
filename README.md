@@ -1,38 +1,37 @@
 # Crab
 
-Nim web framework slightly inspired by Flask
+A simple API framwork written in Nim
 
-Example:
+This project was inspired by [Flask](https://flask.palletsprojects.com/en/2.1.x/)
+
+Simple Setup:
 
 ```nim
-import
-    asyncdispatch,
-    asynchttpserver,
-    crab
+import asyncdispatch, asynchttpserver, crab
 
-proc idx(req: Request) {.async, gcsafe.} =
-    await req.respond(Http200, "Hello, World!", newHttpHeaders())
+proc indexRoute(req: Request): Future[void] {.async.} =
+  await req.respond(Http200, "Hello, World!", newHttpHeaders())
 
-proc hlo(req: Request) {.async, gcsafe.} =
-    await req.respond(Http200, "Goodbye, Mars!", newHttpHeaders())
+proc main(): Future[void] {.async.} =
+  var
+    app = createCrab()
 
-proc pst(req: Request) {.async, gcsafe.} =
-    await req.respond(Http200, "UwU", newHttpHeaders())
+  crab.get("/", index)
 
-proc cstErrHnd(req: Request) {.async, gcsafe.} =
-    await req.respond(Http404, "Error, Page not Found!", newHttpHeaders())
-
-proc main() {.async.} =
-    var
-        crab = newCrab()
-
-    crab.get("/", idx)
-    crab.get("/h", hlo)
-    crab.post("/i", pst)
-    crab.configureErrorHandler(cstErrHnd)
-
-    waitFor crab.run()
+  waitFor crab.run(1234) # Port Number, defaults to 5000
 
 when isMainModule:
-    waitFor main()
+  waitFor main()
+```
+
+404 Page not found method is by default a simple string saying "Page not found".
+
+This can be changed with the creation of a custom error route:
+
+```nim
+proc customErrorRoute(req: Request): Future[void] {.async.} =
+  await req.respond(Http400, "Custom Message", newHttpHeaders())
+
+...
+app.configureErrorHandler(customErrorRoute)
 ```
