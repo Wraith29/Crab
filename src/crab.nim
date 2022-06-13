@@ -20,7 +20,7 @@ type
     errorHandler: RequestHandler
   Crab* = ref CrabObj
 
-proc defaultErrorRequestHandler(request: Request): Future[void] {.async, gcsafe.} =
+proc defaultErrorRequestHandler(request: Request): Future[void] {.async.} =
   await request.respond(Http404, "Page Not Found!", newHttpHeaders())
 
 proc `$`*(route: Route): string =
