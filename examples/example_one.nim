@@ -3,11 +3,11 @@ import
     asynchttpserver,
     crab
 
-proc idx(req: Request) {.async.} =
-    await req.respond(Http200, "Hello, World!", newHttpHeaders())
+proc idx(req: Request): Response =
+    newResponse("Hello, World!", newHttpHeaders(), Http200)
 
-proc cstErrHnd(req: Request) {.async.} =
-    await req.respond(Http404, "Error, Page not Found!", newHttpHeaders())
+proc cstErrHnd(req: Request): Response =
+    newResponse("Page not found", newHttpHeaders(), Http404)
 
 proc main(): Future[void] {.async.} =
     var
