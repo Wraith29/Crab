@@ -7,21 +7,28 @@ This project was inspired by [Flask](https://flask.palletsprojects.com/en/2.1.x/
 Simple Setup:
 
 ```nim
-import asyncdispatch, asynchttpserver, crab
+import
+    asyncdispatch,
+    asynchttpserver,
+    crab
 
-proc indexRoute(req: Request): Future[void] {.async.} =
-  await req.respond(Http200, "Hello, World!", newHttpHeaders())
+proc idx(req: Request): Response =
+    newResponse("Hello, World!", newHttpHeaders(), Http200)
+
+proc cstErrHnd(req: Request): Response =
+    newResponse("Page not found", newHttpHeaders(), Http404)
 
 proc main(): Future[void] {.async.} =
-  var
-    app = createCrab()
+    var
+        crab = newCrab()
 
-  crab.get("/", index)
+    crab.get("/", idx)
+    crab.configureErrorHandler(cstErrHnd)
 
-  waitFor crab.run(1234) # Port Number, defaults to 5000
+    waitFor crab.run()
 
 when isMainModule:
-  waitFor main()
+    waitFor main()
 ```
 
 404 Page not found method is by default a simple string saying "Page not found".
@@ -29,9 +36,8 @@ when isMainModule:
 This can be changed with the creation of a custom error route:
 
 ```nim
-proc customErrorRoute(req: Request): Future[void] {.async.} =
-  await req.respond(Http400, "Custom Message", newHttpHeaders())
-
+proc customErrorRoute(request: Request): Response =
+    newResponse("Not Found", newHttpHeaders(), Http404)
 ...
 app.configureErrorHandler(customErrorRoute)
 ```
