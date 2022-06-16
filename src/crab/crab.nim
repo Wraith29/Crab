@@ -3,7 +3,8 @@ import
         asynchttpserver,
         asyncdispatch,
         strformat,
-        sugar
+        sugar,
+        uri
     ],
     route,
     response,
