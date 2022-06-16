@@ -2,6 +2,7 @@ import
     std/[
         asynchttpserver,
         asyncdispatch,
+        strformat,
         sugar
     ],
     route,
@@ -44,6 +45,7 @@ proc createHandler(crab: Crab): Future[(Request {.async, gcsafe.} -> Future[void
     let
       requestHandler = crab.getRouteHandler(request)
       response = requestHandler(request)
+    echo &"{request.reqMethod}\t{request.url}"
 
     await request.respond(response.code, response.body, response.headers)
 
