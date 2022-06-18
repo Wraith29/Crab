@@ -14,7 +14,7 @@ proc main(): Future[void] {.async.} =
         crab = newCrab()
 
     crab.get("/", idx)
-    crab.configureErrorHandler(cstErrHnd)
+    crab.setDefaultErrorHandler(cstErrHnd)
 
     waitFor crab.run()
 
