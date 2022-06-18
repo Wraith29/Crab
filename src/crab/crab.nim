@@ -41,14 +41,13 @@ proc getRouteHandler(crab: Crab, request: Request): RequestHandler =
     for route in crab.routes:
       if route.path == $request.url and route.httpMethod == request.reqMethod:
         route.handler
-  
+
   if handlers.len == 0:
     return crab.defaultErrorHandler
   return handlers[0]
 
 proc createHandler(crab: Crab): Future[(Request {.async, gcsafe.} -> Future[void])] {.async.} =
   proc handle(request: Request): Future[void] {.async.} =
-    echo request.headers
     let
       requestHandler = crab.getRouteHandler(request)
       response = requestHandler(request)
