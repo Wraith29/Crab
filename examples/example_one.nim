@@ -1,22 +1,17 @@
 import
-    asyncdispatch,
-    asynchttpserver,
-    crab
+    asyncdispatch, asynchttpserver, crab
 
 proc idx(req: Request): Response =
-    newResponse("Hello, World!", newHttpHeaders(), Http200)
+    var validUser = false
+    if not validUser:
+        return error("Invalid User", Http401)
+    return newResponse("Hi There", Http200)
 
-proc cstErrHnd(req: Request): Response =
-    newResponse("Page not found", newHttpHeaders(), Http404)
-
-proc main(): Future[void] {.async.} =
-    var
-        crab = newCrab()
-
-    crab.get("/", idx)
-    crab.setDefaultErrorHandler(cstErrHnd)
-
-    waitFor crab.run()
+proc main() {.async.} =
+    var app = newCrab()
+    app.get("/", idx)
+    
+    waitFor run(app)
 
 when isMainModule:
     waitFor main()

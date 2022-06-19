@@ -19,7 +19,7 @@ type
   Crab* = ref CrabObj
 
 proc defaultErrorRequestHandler(request: Request): Response =
-  newResponse("Page not found!", newHttpHeaders(), Http404)
+  newResponse("Page not found!", Http404, newHttpHeaders())
 
 proc `$`*(crab: Crab): string =
   for route in crab.routes:
@@ -36,6 +36,12 @@ proc setDefaultErrorHandler*(crab: var Crab, handler: RequestHandler): void =
 proc addErrorHandler*(crab: var Crab, code: HttpCode, handler: RequestHandler): void =
   crab.errorHandlerMap[code] = handler
 
+proc error*(message: string, code: HttpCode, headers: HttpHeaders): Response =
+  newResponse(message, code, headers)
+
+proc error*(message: string, code: HttpCode): Response =
+  error(message, code, newHttpHeaders())
+
 proc getRouteHandler(crab: Crab, request: Request): RequestHandler =
   let handlers = collect:
     for route in crab.routes:
@@ -51,7 +57,7 @@ proc createHandler(crab: Crab): Future[(Request {.async, gcsafe.} -> Future[void
     let
       requestHandler = crab.getRouteHandler(request)
       response = requestHandler(request)
-    echo &"{request.reqMethod}\t{request.url}"
+    echo &"REQUEST: {request.reqMethod}\t{request.url}\tRESPONSE: {response.code}"
 
     await request.respond(response.code, response.body, response.headers)
 
