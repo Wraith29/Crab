@@ -12,20 +12,17 @@ import
     asynchttpserver,
     crab
 
-proc idx(req: Request): Response =
-    newResponse("Hello, World!", newHttpHeaders(), Http200)
+proc index(request: Request): Response =
+    var isUserValid = isUserValid()
+    if not isUserValid:
+        error("Invalid User", Http401)
+    newResponse("Home Page", Http200)
 
-proc cstErrHnd(req: Request): Response =
-    newResponse("Page not found", newHttpHeaders(), Http404)
+proc main() {.async.} =
+    var app = newCrab()
+    app.get("/", index)
 
-proc main(): Future[void] {.async.} =
-    var
-        crab = newCrab()
-
-    crab.get("/", idx)
-    crab.configureErrorHandler(cstErrHnd)
-
-    waitFor crab.run()
+    waitFor app.run()
 
 when isMainModule:
     waitFor main()
