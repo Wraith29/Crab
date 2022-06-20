@@ -16,7 +16,7 @@ type
     pageNotFoundHandler: RequestHandler
   Crab* = ref CrabObj
 
-proc defaultErrorRequestHandler(request: Request): Response =
+proc pageNotFoundHandler(request: Request): Response =
   newResponse("Page not found!", Http404, newHttpHeaders())
 
 proc `$`*(crab: Crab): string =
@@ -25,7 +25,7 @@ proc `$`*(crab: Crab): string =
 
 proc newCrab*(): Crab =
   result = new CrabObj
-  result.pageNotFoundHandler = defaultErrorRequestHandler
+  result.pageNotFoundHandler = pageNotFoundHandler
   result.routes = newSeq[Route](0)
 
 proc setPageNotFoundHandler*(crab: var Crab, handler: RequestHandler): void =
