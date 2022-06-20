@@ -13,11 +13,16 @@ import
 type
   CrabObj = object
     routes*: seq[Route]
+    requiredHeaders*: seq[string]
+    missingRequiredHeaderHandler: RequestHandler
     pageNotFoundHandler: RequestHandler
   Crab* = ref CrabObj
 
 proc pageNotFoundHandler(request: Request): Response =
   newResponse("Page not found!", Http404, newHttpHeaders())
+
+proc missingRequiredHeaderHandler(request: Request): Response =
+  newResponse("Missing Required Header", Http404, newHttpHeaders())
 
 proc `$`*(crab: Crab): string =
   for route in crab.routes:
@@ -26,7 +31,10 @@ proc `$`*(crab: Crab): string =
 proc newCrab*(): Crab =
   result = new CrabObj
   result.pageNotFoundHandler = pageNotFoundHandler
-  result.routes = newSeq[Route](0)
+  result.missingRequiredHeaderHandler = missingRequiredHeaderHandler
+  result.routes = @[]
+  result.requiredHeaders = @[]
+
 
 proc setPageNotFoundHandler*(crab: var Crab, handler: RequestHandler): void =
   crab.pageNotFoundHandler = handler
