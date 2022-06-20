@@ -3,7 +3,6 @@ import
         asynchttpserver,
         asyncdispatch,
         strformat,
-        tables,
         sugar,
         uri
     ],
@@ -14,8 +13,7 @@ import
 type
   CrabObj = object
     routes*: seq[Route]
-    defaultErrorHandler: RequestHandler
-    errorHandlerMap: Table[HttpCode, RequestHandler]
+    pageNotFoundHandler: RequestHandler
   Crab* = ref CrabObj
 
 proc defaultErrorRequestHandler(request: Request): Response =
@@ -27,14 +25,11 @@ proc `$`*(crab: Crab): string =
 
 proc newCrab*(): Crab =
   result = new CrabObj
-  result.defaultErrorHandler = defaultErrorRequestHandler
+  result.pageNotFoundHandler = defaultErrorRequestHandler
   result.routes = newSeq[Route](0)
 
-proc setDefaultErrorHandler*(crab: var Crab, handler: RequestHandler): void =
-  crab.defaultErrorHandler = handler
-
-proc addErrorHandler*(crab: var Crab, code: HttpCode, handler: RequestHandler): void =
-  crab.errorHandlerMap[code] = handler
+proc setPageNotFoundHandler*(crab: var Crab, handler: RequestHandler): void =
+  crab.pageNotFoundHandler = handler
 
 proc error*(message: string, code: HttpCode, headers: HttpHeaders): Response =
   newResponse(message, code, headers)
@@ -49,7 +44,7 @@ proc getRouteHandler(crab: Crab, request: Request): RequestHandler =
         route.handler
 
   if handlers.len == 0:
-    return crab.defaultErrorHandler
+    return crab.pageNotFoundHandler
   return handlers[0]
 
 proc createHandler(crab: Crab): Future[(Request {.async, gcsafe.} -> Future[void])] {.async.} =
