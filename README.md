@@ -29,12 +29,3 @@ when isMainModule:
 ```
 
 404 Page not found method is by default a simple string saying "Page not found".
-
-This can be changed with the creation of a custom error route:
-
-```nim
-proc customErrorRoute(request: Request): Response =
-    newResponse("Not Found", newHttpHeaders(), Http404)
-...
-app.configureErrorHandler(customErrorRoute)
-```
