@@ -3,6 +3,8 @@ import
         asynchttpserver,
         asyncdispatch,
         strformat,
+        strutils,
+        tables,
         sugar,
         uri
     ],
@@ -35,8 +37,10 @@ proc newCrab*(): Crab =
   result.routes = @[]
   result.requiredHeaders = @[]
 
+proc setMissingRequiredHeaderHandler*(crab: var Crab, handler: RequestHandler): void {.inline.} =
+  crab.missingRequiredHeaderHandler = handler
 
-proc setPageNotFoundHandler*(crab: var Crab, handler: RequestHandler): void =
+proc setPageNotFoundHandler*(crab: var Crab, handler: RequestHandler): void {.inline.} =
   crab.pageNotFoundHandler = handler
 
 proc error*(message: string, code: HttpCode, headers: HttpHeaders): Response =
@@ -55,13 +59,28 @@ proc getRouteHandler(crab: Crab, request: Request): RequestHandler =
     return crab.pageNotFoundHandler
   return handlers[0]
 
+proc addRequiredHeader*(crab: var Crab, header: string): void {.inline.} =
+  crab.requiredHeaders.add(header)
+
+proc hasRequiredHeaders*(crab: Crab, req: Request): bool =
+  echo crab.requiredHeaders
+  echo req.headers.table
+  for rh in crab.requiredHeaders:
+    if not req.headers.table.hasKey(rh.toLowerAscii):
+      return false
+  true
+
 proc createHandler(crab: Crab): Future[(Request {.async, gcsafe.} -> Future[void])] {.async.} =
   proc handle(request: Request): Future[void] {.async.} =
-    let
-      requestHandler = crab.getRouteHandler(request)
-      response = requestHandler(request)
-    echo &"REQUEST: {request.reqMethod}\t{request.url}\tRESPONSE: {response.code}"
+    let requestHandler = crab.getRouteHandler(request)
+    var response: Response
 
+    if crab.hasRequiredHeaders(request):
+      response = requestHandler(request)
+    else:
+      response = crab.missingRequiredHeaderHandler(request)
+
+    echo &"REQUEST: {request.reqMethod}\t{request.url}\tRESPONSE: {response.code}"
     await request.respond(response.code, response.body, response.headers)
 
   result = handle
