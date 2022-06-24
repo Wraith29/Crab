@@ -63,8 +63,6 @@ proc addRequiredHeader*(crab: var Crab, header: string): void {.inline.} =
   crab.requiredHeaders.add(header)
 
 proc hasRequiredHeaders*(crab: Crab, req: Request): bool =
-  echo crab.requiredHeaders
-  echo req.headers.table
   for rh in crab.requiredHeaders:
     if not req.headers.table.hasKey(rh.toLowerAscii):
       return false
