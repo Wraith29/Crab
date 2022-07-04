@@ -68,7 +68,7 @@ proc hasRequiredHeaders*(crab: Crab, req: Request): bool =
       return false
   true
 
-proc createHandler(crab: Crab): Future[(Request {.async, gcsafe.} -> Future[void])] {.async.} =
+proc createHandler(crab: Crab, debug: bool): Future[(Request {.async, gcsafe.} -> Future[void])] {.async.} =
   proc handle(request: Request): Future[void] {.async.} =
     let requestHandler = crab.getRouteHandler(request)
     var response: Response
@@ -78,14 +78,15 @@ proc createHandler(crab: Crab): Future[(Request {.async, gcsafe.} -> Future[void
     else:
       response = crab.missingRequiredHeaderHandler(request)
 
-    echo &"REQUEST: {request.reqMethod}\t{request.url}\tRESPONSE: {response.code}"
+    if debug:
+      echo &"REQUEST: {request.reqMethod}\t{request.url}\tRESPONSE: {response.code}"
     await request.respond(response.code, response.body, response.headers)
 
   result = handle
 
-proc run*(crab: Crab, port: int = 5000) {.async.} =
+proc run*(crab: Crab, port: int = 5000, debug: bool = false) {.async.} =
   var
     server = newAsyncHttpServer()
-    requestHandler = await createHandler(crab)
+    requestHandler = await createHandler(crab, debug)
 
   waitFor server.serve(Port(port), requestHandler)

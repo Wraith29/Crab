@@ -1,5 +1,7 @@
 # Crab
 
+Current Version: `1.0.5`
+
 A simple API framwork written in Nim
 
 This project was inspired by [Flask](https://flask.palletsprojects.com/en/2.1.x/)
