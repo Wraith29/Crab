@@ -1,22 +1,20 @@
 import
-    std/[
-        asynchttpserver,
-        strformat
-    ],
-    requestHandler
+  std/[
+    asynchttpserver,
+    strformat
+  ],
+  handlers
 
-type
-  RouteObj = object
-    path*: string
-    handler*: RequestHandler
-    httpMethod*: HttpMethod
-  Route* = ref RouteObj
+type Route* = ref object
+  path*: string
+  handler*: RequestHandler
+  httpMethod*: HttpMethod
 
 proc `$`*(route: Route): string =
   fmt"{route.path}, {route.httpMethod}"
 
 proc newRoute*(path: string, httpMethod: HttpMethod, handler: RequestHandler): Route =
-  result = new RouteObj
+  new result
   result.path = path
   result.handler = handler
   result.httpMethod = httpMethod

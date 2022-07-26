@@ -1,6 +1,6 @@
 # Package
 
-version       = "1.0.5"
+version       = "0.1.7"
 author        = "Isaac Naylor"
 description   = "Api framework"
 license       = "MIT"

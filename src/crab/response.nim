@@ -1,18 +1,16 @@
 import
-    asynchttpserver
+  asynchttpserver
 
-type
-  ResponseObj = object
-    body*: string
-    headers*: HttpHeaders
-    code*: HttpCode
-  Response* = ref ResponseObj
+type Response* = ref object
+  body*: string
+  headers*: HttpHeaders
+  code*: HttpCode
 
-proc newResponse*(body: string, code: HttpCode,  headers: HttpHeaders): Response =
-  result = new ResponseObj
+func newResponse*(body: string, code: HttpCode,  headers: HttpHeaders): Response =
+  new result
   result.body = body
   result.code = code
   result.headers = headers
 
-proc newResponse*(body: string, code: HttpCode): Response =
+func newResponse*(body: string, code: HttpCode): Response =
   newResponse(body, code, newHttpHeaders())
