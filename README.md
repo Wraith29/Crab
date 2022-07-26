@@ -1,6 +1,6 @@
 # Crab
 
-Current Version: `1.0.5`
+Current Version: `1.0.7`
 
 A simple API framwork written in Nim
 
